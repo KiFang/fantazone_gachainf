@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gacha Game</title>
+  <title>FANTAZONE INFO GACHA</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,6 +15,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
     }
     .inventory {
       display: flex;
@@ -45,6 +49,23 @@
       margin-top: 10px;
       padding: 10px 20px;
       cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      background-color: #333;
+      transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    button:hover {
+      background-color: #000;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+    }
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     .combine-section {
       margin-top: 20px;
@@ -52,6 +73,14 @@
     select {
       margin: 5px;
       padding: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+    select:focus {
+      border-color: #007bff;
+      outline: none;
     }
     .sort-buttons {
       margin-top: 20px;
@@ -82,37 +111,77 @@
       float: right;
       cursor: pointer;
       color: red;
+      font-size: 18px;
+    }
+    .language-switcher {
+      margin-top: 10px;
+    }
+    .language-switcher button {
+      margin-right: 5px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Gacha Game</h1>
-    <button onclick="pullCharacter()">Pull Character</button>
+    <h1 id="pageTitle">FANTAZONE INFO GACHA</h1>
+    <button onclick="pullCharacter()" id="pullButton">Pull Character</button>
     <div class="inventory" id="inventory"></div>
     <div class="sort-buttons">
-      <button onclick="sortByName()">Sort by Name</button>
-      <button onclick="sortByRarity()">Sort by Rarity</button>
+      <button onclick="sortByName()" id="sortByNameButton">Sort by Name</button>
+      <button onclick="sortByRarity()" id="sortByRarityButton">Sort by Rarity</button>
     </div>
     <div class="combine-section">
-      <h2>Combine Characters</h2>
+      <h2 id="combineTitle">Combine Characters</h2>
       <select id="char1"></select>
       <select id="char2"></select>
-      <button onclick="combineCharacters()">Combine</button>
+      <button onclick="combineCharacters()" id="combineButton">Combine</button>
+    </div>
+    <div class="language-switcher">
+      <button onclick="switchLanguage('en')">English</button>
+      <button onclick="switchLanguage('ru')">Русский</button>
     </div>
   </div>
 
   <div class="info-box" id="infoBox">
     <span class="close-btn" onclick="closeInfoBox()">&times;</span>
     <h2 id="infoName"></h2>
-    <p><strong>Main Weapon:</strong> <span id="infoMainWeapon"></span></p>
-    <p><strong>Secondary Weapon:</strong> <span id="infoSecondaryWeapon"></span></p>
-    <p><strong>Skill:</strong> <span id="infoSkill"></span></p>
-    <p><strong>Ultimate:</strong> <span id="infoUltimate"></span></p>
-    <p><strong>Faction:</strong> <span id="infoFaction"></span></p>
+    <p><strong id="mainWeaponLabel">Main Weapon:</strong> <span id="infoMainWeapon"></span></p>
+    <p><strong id="secondaryWeaponLabel">Secondary Weapon:</strong> <span id="infoSecondaryWeapon"></span></p>
+    <p><strong id="skillLabel">Skill:</strong> <span id="infoSkill"></span></p>
+    <p><strong id="ultimateLabel">Ultimate:</strong> <span id="infoUltimate"></span></p>
+    <p><strong id="factionLabel">Faction:</strong> <span id="infoFaction"></span></p>
   </div>
 
   <script>
+    const translations = {
+      en: {
+        pageTitle: "FANTAZONE INFO GACHA",
+        pullButton: "Pull Character",
+        sortByNameButton: "Sort by Name",
+        sortByRarityButton: "Sort by Rarity",
+        combineTitle: "Combine Characters",
+        combineButton: "Combine",
+        mainWeaponLabel: "Main Weapon:",
+        secondaryWeaponLabel: "Secondary Weapon:",
+        skillLabel: "Skill:",
+        ultimateLabel: "Ultimate:",
+        factionLabel: "Faction:"
+      },
+      ru: {
+        pageTitle: "FANTAZONE INFO GACHA",
+        pullButton: "Вытянуть персонажа",
+        sortByNameButton: "Сортировать по имени",
+        sortByRarityButton: "Сортировать по редкости",
+        combineTitle: "Объединить персонажей",
+        combineButton: "Объединить",
+        mainWeaponLabel: "Основное оружие:",
+        secondaryWeaponLabel: "Дополнительное оружие:",
+        skillLabel: "Навык:",
+        ultimateLabel: "Ультимейт:",
+        factionLabel: "Фракция:"
+      }
+    };
+
     const charactersData = {
       "Элия": { mainWeapon: "Фотоаппарат", secondaryWeapon: "-", skill: "Отскок", ultimate: "Горящий кадр", faction: "Инигиторы" },
       "Алан": { mainWeapon: "Метательные ножи", secondaryWeapon: "Надувной молот", skill: "Проказник", ultimate: "Смерть юмора", faction: "Инигиторы" },
@@ -137,6 +206,7 @@
     };
 
     let inventory = [];
+    let currentLanguage = "en";
 
     function getRandomCharacter() {
       const roll = Math.random() * 100;
@@ -200,7 +270,7 @@
       const char2Index = parseInt(document.getElementById("char2").value);
 
       if (char1Index === char2Index) {
-        alert("You cannot combine the same character instance!");
+        alert(currentLanguage === "en" ? "You cannot combine the same character instance!" : "Вы не можете объединить одинаковых персонажей!");
         return;
       }
 
@@ -208,12 +278,12 @@
       const char2 = inventory[char2Index];
 
       if (char1.name !== char2.name || char1.stars !== char2.stars) {
-        alert("Characters must have the same name and star level to combine!");
+        alert(currentLanguage === "en" ? "Characters must have the same name and star level to combine!" : "Персонажи должны иметь одинаковое имя и уровень звезд для объединения!");
         return;
       }
 
       if (char1.stars >= 5) {
-        alert("Characters already at max star level!");
+        alert(currentLanguage === "en" ? "Characters already at max star level!" : "Персонажи уже достигли максимального уровня звезд!");
         return;
       }
 
@@ -250,6 +320,26 @@
     function closeInfoBox() {
       document.getElementById("infoBox").style.display = "none";
     }
+
+    function switchLanguage(lang) {
+      currentLanguage = lang;
+      const translation = translations[lang];
+
+      document.getElementById("pageTitle").textContent = translation.pageTitle;
+      document.getElementById("pullButton").textContent = translation.pullButton;
+      document.getElementById("sortByNameButton").textContent = translation.sortByNameButton;
+      document.getElementById("sortByRarityButton").textContent = translation.sortByRarityButton;
+      document.getElementById("combineTitle").textContent = translation.combineTitle;
+      document.getElementById("combineButton").textContent = translation.combineButton;
+      document.getElementById("mainWeaponLabel").textContent = translation.mainWeaponLabel;
+      document.getElementById("secondaryWeaponLabel").textContent = translation.secondaryWeaponLabel;
+      document.getElementById("skillLabel").textContent = translation.skillLabel;
+      document.getElementById("ultimateLabel").textContent = translation.ultimateLabel;
+      document.getElementById("factionLabel").textContent = translation.factionLabel;
+    }
+
+    // Initialize with English language
+    switchLanguage("en");
   </script>
 </body>
 </html>
